@@ -1,62 +1,67 @@
-#include <iostream>
-#include <string>
+#include <GLTools.h>
+#include <GLShaderManager.h>
 
-#include <SDL.h>
-#include <SDL_opengl.h>
+#ifdef __APPLE__
+# include <glut/glut.h>
+#else
+# include <GL/glut.h>
+#endif
 
-using namespace std;
+GLBatch triangleBatch;
+GLShaderManager shaderManager;
 
-void foobar(SDL_Window *window)
+void ChangeSize(int w, int h)
 {
-    /* Clear our buffer with a red background */
-    glClearColor ( 1.0, 0.0, 0.0, 1.0 );
-    glClear ( GL_COLOR_BUFFER_BIT );
-    /* Swap our back buffer to the front */
-    SDL_GL_SwapWindow(window);
-    /* Wait 2 seconds */
-    SDL_Delay(2000);
- 
-    /* Same as above, but green */
-    glClearColor ( 0.0, 1.0, 0.0, 1.0 );
-    glClear ( GL_COLOR_BUFFER_BIT );
-    SDL_GL_SwapWindow(window);
-    SDL_Delay(2000);
- 
-    /* Same as above, but blue */
-    glClearColor ( 0.0, 0.0, 1.0, 1.0 );
-    glClear ( GL_COLOR_BUFFER_BIT );
-    SDL_GL_SwapWindow(window);
-    SDL_Delay(2000);
+    glViewport(0, 0, w, h);
 }
- 
-/* Our program's entry point */
+
+void SetupRC()
+{
+    glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+
+    shaderManager.InitializeStockShaders();
+
+    GLfloat vVerts[] = {
+        -0.5f, 0.0f, 0.0f,
+        0.5f, 0.0f, 0.0f,
+        0.0f, 0.5f, 0.0f
+    };
+
+    triangleBatch.Begin(GL_TRIANGLES, 3);
+    triangleBatch.CopyVertexData3f(vVerts);
+    triangleBatch.End();
+}
+
+void RenderScene()
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+    GLfloat vRed[] = { 1.0f, 0.0f, 0.0f, 1.0f };
+    shaderManager.UseStockShader(GLT_SHADER_IDENTITY, vRed);
+    triangleBatch.Draw();
+
+    glutSwapBuffers();
+}
+
 int main(int argc, char *argv[])
 {
-    SDL_Window *mainwindow; /* Our window handle */
-    SDL_GLContext maincontext; /* Our opengl context handle */
- 
-    /* Turn on double buffering with a 24bit Z buffer.
-     * You may need to change this to 16 or 32 for your system */
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
- 
-    /* Create our window centered at 512x512 resolution */
-    mainwindow = SDL_CreateWindow("Hello World", SDL_WINDOWPOS_CENTERED,
-                                  SDL_WINDOWPOS_CENTERED,
-                                  512, 512, SDL_WINDOW_OPENGL);
- 
-    /* Create our opengl context and attach it to our window */
-    maincontext = SDL_GL_CreateContext(mainwindow);
+    gltSetWorkingDirectory(argv[0]);
 
-    cout << reinterpret_cast<const char*>(glGetString(GL_VERSION)) << endl;
-  
-    /* This makes our buffer swap syncronized with the monitor's vertical refresh */
-    SDL_GL_SetSwapInterval(1);
- 
-    foobar(mainwindow);
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL);
+    glutInitWindowSize(800, 600);
+    glutCreateWindow("Triangle");
+    glutReshapeFunc(ChangeSize);
+    glutDisplayFunc(RenderScene);
 
-    /* Delete our opengl context, destroy our window, and shutdown SDL */
-    SDL_GL_DeleteContext(maincontext);
-    SDL_DestroyWindow(mainwindow);
-    SDL_Quit();
+    GLenum err = glewInit();
+    if (GLEW_OK != err) {
+        fprintf(stderr, "GLEW Error: %s\n", glewGetErrorString(err));
+        return 1;
+    }
+
+    SetupRC();
+
+    glutMainLoop();
+    return 0;
 }
