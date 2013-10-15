@@ -7,7 +7,11 @@ set(gltools_src
   math3d.cpp
 )
 
-include_directories(${GLTOOLS_INCLUDE_DIRS})
+include_directories(${OPENGL_INCLUDE_DIRS}
+  ${GLUT_INCLUDE_DIRS}
+  ${GLEW_INCLUDE_DIRS}
+  ${GLTOOLS_INCLUDE_DIRS}
+)
 
 add_library(gltools
   ${gltools_src}

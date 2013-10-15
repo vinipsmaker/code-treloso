@@ -10,6 +10,7 @@ project(code_treloso)
 # Requisita o uso da OpenGL
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
+find_package(GLEW REQUIRED)
 
 add_subdirectory(3rdparty)
 
@@ -18,6 +19,7 @@ add_subdirectory(3rdparty)
 # definidas pelos módulos de CMake OpenGL e SDL2.
 include_directories(${OPENGL_INCLUDE_DIRS}
   ${GLUT_INCLUDE_DIRS}
+  ${GLEW_INCLUDE_DIRS}
   ${GLTOOLS_INCLUDE_DIRS}
 )
 
@@ -41,5 +43,6 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   ${OPENGL_LIBRARIES}
   "${GLUT_LIBRARY}"
+  ${GLEW_LIBRARIES}
   gltools
 )
