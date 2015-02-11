@@ -23,9 +23,6 @@ int main(int argc, char *argv[])
                                   SDL_WINDOWPOS_CENTERED,
                                   512, 512, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
 
-    SDL_Renderer* render = SDL_CreateRenderer(mainwindow, -1,
-                           SDL_RENDERER_ACCELERATED| SDL_RENDERER_PRESENTVSYNC);
-
     /* Create our opengl context and attach it to our window */
     maincontext = SDL_GL_CreateContext(mainwindow);
 
@@ -37,40 +34,36 @@ int main(int argc, char *argv[])
     bool exitp = false;
     SDL_Event event;
 
-    SDL_SetRenderDrawColor(render, 250, 250, 250, 250);
-
-    int fpsCount = 0;
-
+		const Uint32 period = 1000 / 30;
+		Uint32 start;
     GLfloat colorVector[3][4] = {{1.0, 0.0, 0.0, 1.0 },
                                  {0.0, 1.0, 0.0, 1.0 },
                                  {0.0, 0.0, 1.0, 1.0}};
-    unsigned posColor = 0;
 
     while(!exitp)
     {
-      fpsCount++;
-      SDL_PollEvent(&event);
+				start = SDL_GetTicks();
+        SDL_PollEvent(&event);
 
-      if(event.type == SDL_QUIT)
-        exitp= true;
+        if(event.type == SDL_QUIT)
+            exitp= true;
 
-      SDL_RenderClear(render);
+				unsigned posColor = (start / 1000) % 3;
 
-      if(fpsCount%60 == 0)
-        ++posColor;
+        glClearColor(colorVector[posColor][0], colorVector[posColor][1],
+                     colorVector[posColor][2], colorVector[posColor][3]);
 
-      glClearColor(colorVector[posColor%3][0], colorVector[posColor%3][1],
-                   colorVector[posColor%3][2], colorVector[posColor%3][3]);
+        glClear(GL_COLOR_BUFFER_BIT);
 
-      glClear (GL_COLOR_BUFFER_BIT);
-
-      SDL_RenderPresent(render);
-
-      if(fpsCount == 60)
-        fpsCount = 0;
-     }
+				SDL_GL_SwapWindow(mainwindow);
+				Uint32 passed = SDL_GetTicks() - start;
+				Uint32 remaining = 0;
+				if (passed < period)
+						remaining = period - passed;
+				SDL_Delay(remaining);
+		}
 
     SDL_GL_DeleteContext(maincontext);
-    SDL_DestroyWindow(mainwindow);
-    SDL_Quit();
+		SDL_DestroyWindow(mainwindow);
+		SDL_Quit();
 }
